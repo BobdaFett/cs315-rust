@@ -1,24 +1,26 @@
 pub mod hw5;
 
-use hw5::{Point, qsort, xmin, ymin};
+use hw5::{xmin, ymin, Point, closest_pair};
+use rand::{Rng, thread_rng};
 
-fn main() {
-    let temp = Point::from(6.0, 7.0);
-    let temp2 = Point::from(1.34, 5.6);
-    
-    let mut arr = vec![temp, temp2];  // starts as (6, 7), (1.34, 5.6)
-    let mut arr2 = vec![temp2, temp]; // starts as (1.34, 5.6), (6, 7)
-    
-    qsort(xmin, &mut arr);
-    qsort(ymin, &mut arr2);
-    
-    print_vec(&arr);
-    print_vec(&arr2);
-}
-
-fn print_vec(arr: &Vec<Point>) {
-    for p in arr {
-        print!("({}, {}), ", p.x, p.y)
+pub fn main() {
+    let mut x_points: Vec<Point> = Vec::new();
+    for _ in 0..10 {
+        x_points.push(Point {
+            x: thread_rng().gen_range(0..50) as f32,
+            y: thread_rng().gen_range(0..50) as f32 });
     }
-    println!();
+    let mut y_points = x_points.clone();
+
+    println!("Sorting by x values");
+    println!("Before: {:?}", x_points);
+    hw5::qsort(xmin, &mut x_points);
+    println!("After:  {:?}\n", x_points);
+
+    println!("Sorting by y values");
+    println!("Before: {:?}", y_points);
+    hw5::qsort(ymin, &mut y_points);
+    println!("After:  {:?}", y_points);
+
+    closest_pair(x_points, y_points);
 }

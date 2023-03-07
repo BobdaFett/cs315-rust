@@ -1,8 +1,8 @@
 /// Simply stores a coordinate pair. Could use a Pair, but this is more fun.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Point {
     pub x: f32,
-    pub y: f32
+    pub y: f32,
 }
 
 impl Point {
@@ -18,20 +18,18 @@ impl Point {
 /// Utility function to compare the x values of 2 points.
 /// Returns true if the first point has a smaller value.
 pub fn xmin(a: Point, b: Point) -> bool {
-    if a.x < b.x { true }
-    else { false }
+    a.x < b.x
 }
 
 /// Utility function to compare the y values of 2 points.
 /// Returns true if the first point has a smaller value.
 pub fn ymin(a: Point, b: Point) -> bool {
-    if a.x < b.x { true }
-    else { false }
+    a.y < b.y
 }
 
 /// Utility function to find the distance between two points.
 fn dist_func(a: &Point, b: &Point) -> f32 {
-    f32::sqrt( (a.x - b.x)*(a.x - b.x) + (a.y - b.y)*(a.y-b.y) )
+    f32::sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y))
 }
 
 /// Utility function that returns the minimum of two f32 values.
@@ -58,7 +56,7 @@ pub fn closest_pair(sorted_x: Vec<Point>, sorted_y: Vec<Point>) -> f32 {
                 }
             }
         }
-        return f32::sqrt(dmin2)
+        return f32::sqrt(dmin2);
     }
 
     let m = sorted_x[f32::ceil(n as f32 / 2.0) as usize - 1].x;
@@ -99,8 +97,9 @@ pub fn closest_pair(sorted_x: Vec<Point>, sorted_y: Vec<Point>) -> f32 {
     }
 
     let strip_l = strip.len();
+    println!("strip_l = {}", strip_l);
 
-    for i in 0..strip_l-2 {
+    for i in 0..(strip_l - 2) {  // usize values cannot be negative. is there another way to go about doing this?
         let mut k = i + 1;
         while (k < strip_l) & ((strip[k].y - strip[i].y) < min_dist) {
             let current_dist = dist_func(&strip[k], &strip[i]);
@@ -117,47 +116,42 @@ pub fn closest_pair(sorted_x: Vec<Point>, sorted_y: Vec<Point>) -> f32 {
 /// A quick sort function that implements a function pointer for ease of access.
 /// This is exclusively for use in this program. I'm not using template types for this right now.
 pub fn qsort(order: fn(Point, Point) -> bool, arr: &mut Vec<Point>) {
-    quick_sort(arr, 0, arr.len(), order);
+    quick_sort(arr, 0, (arr.len() - 1) as isize, order);
 }
 
 /// Runs the full quick sort and handles partitioning.
 /// Passes the function pointer into the partitioning function.
-fn quick_sort(arr: &mut Vec<Point>, low: usize, high: usize, order: fn(Point, Point) -> bool) {
+/// Private function that is only called as a result of using qsort.
+fn quick_sort(arr: &mut Vec<Point>, low: isize, high: isize, order: fn(Point, Point) -> bool) {
     if low < high {
-        let p  = partition(arr, low, high, order);
+        let p = partition(arr, low, high, order);
         quick_sort(arr, low, p - 1, order);
-        quick_sort(arr, p, high - 1, order);
+        quick_sort(arr, p + 1, high, order);
     }
 }
 
 /// Partitions the array around a pivot value.
 /// Returns the index of the pivot value.
-fn partition(arr: &mut Vec<Point>, left: usize, right: usize, order: fn(Point, Point) -> bool) -> usize {
-    let pivot = right;
-    let mut store_index = left;
-    let mut last_index = right - 1;
+fn partition(arr: &mut Vec<Point>, start: isize, end: isize, order: fn(Point, Point) -> bool) -> isize {
+    let pivot = end as usize;
+    let mut left = start - 1;
+    let mut right = end;
 
     loop {
-        // arr[store_index] < arr[pivot] for ascending order.
-        // we're using ordering in non-descending order.
-        while order(arr[store_index], arr[pivot]) {
-            store_index += 1;
+        left += 1;
+        while order(arr[left as usize], arr[pivot]) {
+            left += 1;
         }
-
-        // arr[last_index] > arr[pivot] for ascending order.
-        // we're using ordering in non-descending order.
-        while !order(arr[last_index], arr[pivot]) {
-            last_index -= 1;
+        right -= 1;
+        while right >= 0 && !order(arr[right as usize], arr[pivot]) {
+            right -= 1;
         }
-
-        // if our last index is equal to or before the "first" index...
-        if store_index >= last_index {
+        if left >= right {
             break;
         } else {
-            arr.swap(store_index, last_index);
+            arr.swap(left as usize, right as usize);
         }
     }
-
-    arr.swap(store_index, last_index);
-    store_index
+    arr.swap(left as usize, pivot);
+    left
 }
